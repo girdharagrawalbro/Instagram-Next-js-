@@ -1,0 +1,43 @@
+async function suggestUsers(userId) {
+  const user = await User.findById(userId).populate('following');
+  const followingIds = user.following.map(f => f._id);
+
+  const suggestedUsers = await User.find({
+    _id: { $ne: userId, $nin: followingIds },
+    followers: { $in: followingIds }
+  }).limit(10);
+
+  return suggestedUsers;
+}
+
+
+
+import React, { useState, useEffect } from 'react';
+
+const UserSuggestions = ({ userId }) => {
+  const [suggestions, setSuggestions] = useState([]);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      const response = await fetch(`/api/suggestions/${userId}`);
+      const data = await response.json();
+      setSuggestions(data);
+    };
+
+    fetchSuggestions();
+  }, [userId]);
+
+  return (
+    <div className="suggestions">
+      {suggestions.map(user => (
+        <div key={user._id} className="suggested-user">
+          <img src={user.profile_picture} alt={user.username} />
+          <h5>{user.username}</h5>
+          <p>{user.bio}</p>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default UserSuggestions;

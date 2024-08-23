@@ -1,44 +1,58 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client"
+import React, { useEffect } from "react";
+import Sidenav from './components/Sidenav';
+import Topbar from './components/Topbar';
+import StoriesSec from './components/StoriesSec';
+import Feed from './components/Feed';
+import Profile from './components/Profile';
+import ImageUpload from './components/ImageUpload';
+import { useRouter } from "next/navigation";
+
+import { useInstaContext } from "./context/InstaContext";
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Loggged out Redirecting to login page")
+      router.push("/login");
+    }
+  }, [router]);
+
+  const {
+    fetchUserData,
+    users,
+    fetchStories,
+    fetchSuggestions,
+  } = useInstaContext();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const userData = await fetchUserData();
+      console.log(userData._id)
+      if (userData && userData._id) {
+        await fetchStories({ userId: userData._id });
+      }
+    };
+
+    fetchData();
+  }, []); // Empty dependency array means this effect runs once on mount
+
+
   return (
     <>
-      <div className="container">
-        <div className="img-container">
-          <img src="instagram/svg/screenshot1.png" alt="alt" />
+      <Topbar />
+      <div className="section d-flex">
+        <Sidenav />
+        <div className="main p-3">
+          <StoriesSec />
+          <ImageUpload />
+          <Feed />
         </div>
-        <div className="form-container" id="login-container">
-          <img src="/svg/logo.png" alt="logo" />
-            <form action="#login" method="post">
-              <input type="text" name="username" placeholder="Username or email" required />
-              <input type="password" name="password" placeholder="Password" required />
-                <button type="submit" name="login">Log In</button>
-            </form>
-            <h4 id="login">
-
-            </h4>
-            <div className="link">
-              <p>Don't have an account? <a id="show-signup">Sign up</a></p>
-            </div>
-        </div>
-
-        <div className="form-container" id="signup-container">
-          <img src="instagram/svg/logo.png" alt="logo" />
-          <form action="#signup" method="post">
-            <input type="email" name="email" placeholder="Email" required />
-            <input type="text" name="fullname" placeholder="Full Name" required />
-            <input type="text" name="username" placeholder="Username" required />
-            <input type="password" name="password" placeholder="Password" required />
-            <button type="submit" name="signup">Sign Up</button>
-          </form>
-          <h4 id="signup">
-
-          </h4>
-          <div className="link">
-            <p>Have an account? <a id="show-login">Log in</a></p>
-          </div>
-        </div>
+        <Profile />
       </div>
     </>
   );

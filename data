@@ -1,0 +1,29 @@
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
+
+const UserSchema = new Schema({
+  username: String,
+  email: String,
+  profile_picture: String,
+  location: String,
+  bio: String,
+  interests: [String],
+  followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+});
+
+const FollowSchema = new Schema({
+  follower: { type: Schema.Types.ObjectId, ref: 'User' },
+  following: { type: Schema.Types.ObjectId, ref: 'User' },
+});
+
+const InteractionSchema = new Schema({
+  user: { type: Schema.Types.ObjectId, ref: 'User' },
+  action: String, // e.g., 'like', 'comment', 'search'
+  targetUser: { type: Schema.Types.ObjectId, ref: 'User' },
+  timestamp: Date,
+});
+
+const User = mongoose.model('User', UserSchema);
+const Follow = mongoose.model('Follow', FollowSchema);
+const Interaction = mongoose.model('Interaction', InteractionSchema);
